@@ -12,7 +12,11 @@ Contributors:
 These are sample scripts to load a TensorFlow model and run a forward step. See [TensorFlow for C](https://www.tensorflow.org/install/lang_c) for TF C++ API installation instructions.
 
 The following examples are provided (will be updated accordingly):
-1. A sample Hello World implementation [`example_tensorflowNN_cpu.cpp`](example_tensorflowNN_cpu.cpp)
+1. [`example_tensorflow_HelloWorld.cpp`](example_tensorflow_HelloWorld.cpp): A sample Hello World implementation
+2. [`example_tensorflow_NNmodel.cpp`](example_tensorflow_NNmodel.cpp): A simple model to replicate an activation function
+    - Based on https://github.com/AmirulOm/tensorflow_capi_sample.git
+3. [`example_tensorflow_tanh.cpp`](example_tensorflow_tanh.cpp): A simple feedforwad NN for regression
+    - Model based on https://github.com/muralikrishnangm/tutorial-ai4science-fluidflow#example-1
 
 # Usage
 
