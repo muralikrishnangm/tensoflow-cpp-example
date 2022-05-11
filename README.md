@@ -9,7 +9,7 @@ Contributors:
 
 # Description
 
-These are sample scripts to load a TensorFlow model and run a forward step.
+These are sample scripts to load a TensorFlow model and run a forward step. See [TensorFlow for C](https://www.tensorflow.org/install/lang_c) for TF C++ API installation instructions.
 
 The following examples are provided (will be updated accordingly):
 1. A sample Hello World implementation [`example_tensorflowNN_cpu.cpp`](example_tensorflowNN_cpu.cpp)
