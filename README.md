@@ -22,7 +22,7 @@ The following examples are provided (will be updated accordingly):
 
 First save any TensorFlow or Keras model in your python script as:
 ```
-    model.save('model_dir_name', save_format='tf')
+my_model.save('model_dir_name', save_format='tf')
 ```
 
 1. Activate binaries using environment file corresponding to your machine
