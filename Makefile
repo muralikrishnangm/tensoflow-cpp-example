@@ -2,10 +2,13 @@
 # First do `source build/<machine_name>.env`
 # Make sure TF_INCLUDE_DIR and TF_LIBRARY_DIR are defined
 
+# define which source file to compile. Options: example_tensorflow_HelloWorld , example_tensorflow_NNmodel
+SRC=example_tensorflow_NNmodel
+
 all: run
 
-run: example_tensorflowNN_cpu.o
-	$(CC) $(CCFLAGS) -o example.exe example_tensorflowNN_cpu.cpp
+run: $(SRC).o
+	$(CC) $(CCFLAGS) -o example.exe $(SRC).cpp
      
 clean:
 	 rm *.o *.exe 
