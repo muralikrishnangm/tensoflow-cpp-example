@@ -26,18 +26,19 @@ The following examples are provided (will be updated accordingly):
     ```
     Example: For running on CPU on Summit
     ```
-    source summit_cpu.env
+    source build/summit_cpu.env
     ```
 2. Compile: 
+    Update `Makefile` to select which model to do inference (change `SRC` in the file)
     ```
     make
     ```
 3. Run:
     ```
-    ./example.exe
+    ./example.exe models/<model-name>
     ```
     
-* Sample output for the GPU usage (`example_tensorflowNN_cpu.cpp`)
+* Sample output for `example_tensorflow_HelloWorld.cpp`:
   ```
   Hello from TensorFlow C library version 2.4.1
   ```
