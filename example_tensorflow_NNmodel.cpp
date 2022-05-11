@@ -1,108 +1,123 @@
+// Simple activation function
+// Input: x
+// Output: relu(x)
+// Model: Single layer feed-forward NN
+// By MGM, 05/11/2022
+// Adopted from https://github.com/AmirulOm/tensorflow_capi_sample.git
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "tensorflow/c/c_api.h"
 
 void NoOpDeallocator(void* data, size_t a, void* b) {}
 
-int main()
+int main(int argc, char** argv)
 {
-    //********* Read model
-    TF_Graph* Graph = TF_NewGraph();
-    TF_Status* Status = TF_NewStatus();
+  if (argc <= 1) { printf("ERROR: ./example.exe models/<model-name>\n"); return -1;}
 
-    TF_SessionOptions* SessionOpts = TF_NewSessionOptions();
-    TF_Buffer* RunOpts = NULL;
+  // ================================
+  // Read model and allocate inputs & outputs
+  // ================================
+  
+  // Run following (python needed) to figure out model serving tag, signature, names of inputs & outputs: 
+  //        saved_model_cli show --dir <path-to-model-dir>
+  //        saved_model_cli show --dir <path-to-model-dir> --tag_set serve
+  //        saved_model_cli show --dir <path-to-model-dir> --tag_set serve --signature_def serving_default
+  // Use the name of 'inputs' and 'outputs'
 
-    const char* saved_model_dir = "model/";
-    const char* tags = "serve"; // default model serving tag; can change in future
-    int ntags = 1;
+  //********* Read model
+  TF_Graph* Graph = TF_NewGraph();
+  TF_Status* Status = TF_NewStatus();
 
-    TF_Session* Session = TF_LoadSessionFromSavedModel(SessionOpts, RunOpts, saved_model_dir, &tags, ntags, Graph, NULL, Status);
-    if(TF_GetCode(Status) == TF_OK)
-    {
-        printf("TF_LoadSessionFromSavedModel OK\n");
-    }
-    else
-    {
-        printf("%s",TF_Message(Status));
-    }
+  TF_SessionOptions* SessionOpts = TF_NewSessionOptions();
+  TF_Buffer* RunOpts = NULL;
 
-    //****** Get input tensor
-    //TODO : need to use saved_model_cli to read saved_model arch
-    int NumInputs = 1;
-    TF_Output* Input = (TF_Output*)malloc(sizeof(TF_Output) * NumInputs);
+  // Get path to model directory from input
+  const char* saved_model_dir = argv[1];
+  printf("Model: %s\n", saved_model_dir);
+  // model serve tag
+  const char* tags = "serve";
+  int ntags = 1;
 
-    TF_Output t0 = {TF_GraphOperationByName(Graph, "serving_default_input_1"), 0};
-    if(t0.oper == NULL)
-      printf("ERROR: Failed TF_GraphOperationByName serving_default_input_1\n");
-    else
-      printf("TF_GraphOperationByName serving_default_input_1 is OK\n");
+  TF_Session* Session = TF_LoadSessionFromSavedModel(SessionOpts, RunOpts, saved_model_dir, &tags, ntags, Graph, NULL, Status);
+  if(TF_GetCode(Status) == TF_OK)
+  {
+    printf("TF_LoadSessionFromSavedModel OK\n");
+  }
+  else
+  {
+    printf("%s",TF_Message(Status));
+  }
 
-    Input[0] = t0;
+  //****** Get input tensor
+  int NumInputs = 1;
+  TF_Output* Input = (TF_Output*)malloc(sizeof(TF_Output) * NumInputs);
 
-    //********* Get Output tensor
-    int NumOutputs = 1;
-    TF_Output* Output = (TF_Output*)malloc(sizeof(TF_Output) * NumOutputs);
+  TF_Output t0 = {TF_GraphOperationByName(Graph, "serving_default_input_1"), 0};
+  if(t0.oper == NULL)
+    printf("ERROR: Failed TF_GraphOperationByName serving_default_input_1\n");
+  else
+    printf("TF_GraphOperationByName serving_default_input_1 is OK\n");
 
-    TF_Output t2 = {TF_GraphOperationByName(Graph, "StatefulPartitionedCall"), 0};
-    if(t2.oper == NULL)
-      printf("ERROR: Failed TF_GraphOperationByName StatefulPartitionedCall\n");
-    else	
-      printf("TF_GraphOperationByName StatefulPartitionedCall is OK\n");
+  Input[0] = t0;
 
-    Output[0] = t2;
+  //********* Get Output tensor
+  int NumOutputs = 1;
+  TF_Output* Output = (TF_Output*)malloc(sizeof(TF_Output) * NumOutputs);
 
-    //********* Allocate data for inputs & outputs
-    TF_Tensor** InputValues = (TF_Tensor**)malloc(sizeof(TF_Tensor*)*NumInputs);
-    TF_Tensor** OutputValues = (TF_Tensor**)malloc(sizeof(TF_Tensor*)*NumOutputs);
+  TF_Output t2 = {TF_GraphOperationByName(Graph, "StatefulPartitionedCall"), 0};
+  if(t2.oper == NULL)
+    printf("ERROR: Failed TF_GraphOperationByName StatefulPartitionedCall\n");
+  else	
+    printf("TF_GraphOperationByName StatefulPartitionedCall is OK\n");
 
-    int ndims = 2;
-    int64_t dims[] = {1,1};
-    int64_t data[] = {20};//= {1,1,1,1,1,1,1,1,1,1};
-    // for(int i=0; i< (1*30); i++)
-    // {
-    //     data[i] = 1.00;
-    // }
-    int ndata = sizeof(int64_t) ;// This is tricky, it number of bytes not number of element
+  Output[0] = t2;
 
-    TF_Tensor* int_tensor = TF_NewTensor(TF_INT64, dims, ndims, data, ndata, &NoOpDeallocator, 0);
-    if (int_tensor != NULL)
-    {
-      printf("TF_NewTensor is OK\n");
-    }
-    else
-      printf("ERROR: Failed TF_NewTensor\n");
+  //********* Allocate data for inputs & outputs
+  TF_Tensor** InputValues = (TF_Tensor**)malloc(sizeof(TF_Tensor*)*NumInputs);
+  TF_Tensor** OutputValues = (TF_Tensor**)malloc(sizeof(TF_Tensor*)*NumOutputs);
 
-    InputValues[0] = int_tensor;
+  int ndims = 2;
+  int64_t dims[] = {1,1};
+  int64_t data[] = {20};
+  int ndata = sizeof(int64_t)*1; // number of bytes not number of element
 
-    // //Run the Session
-    TF_SessionRun(Session, NULL, Input, InputValues, NumInputs, Output, OutputValues, NumOutputs, NULL, 0,NULL , Status);
+  TF_Tensor* int_tensor = TF_NewTensor(TF_INT64, dims, ndims, data, ndata, &NoOpDeallocator, 0);
+  if (int_tensor != NULL)
+  {
+    printf("TF_NewTensor is OK\n");
+  }
+  else
+    printf("ERROR: Failed TF_NewTensor\n");
 
-    if(TF_GetCode(Status) == TF_OK)
-    {
-      printf("Session is OK\n");
-    }
-    else
-    {
-      printf("%s",TF_Message(Status));
-    }
+  InputValues[0] = int_tensor;
 
-    // //Free memory
-    TF_DeleteGraph(Graph);
-    TF_DeleteSession(Session, Status);
-    TF_DeleteSessionOptions(SessionOpts);
-    TF_DeleteStatus(Status);
+  // ================================
+  // Run the Session
+  // ================================
+  TF_SessionRun(Session, NULL, Input, InputValues, NumInputs, Output, OutputValues, NumOutputs, NULL, 0,NULL , Status);
 
+  if(TF_GetCode(Status) == TF_OK)
+  {
+    printf("Session is OK\n");
+  }
+  else
+  {
+    printf("%s",TF_Message(Status));
+  }
 
-    void* buff = TF_TensorData(OutputValues[0]);
-    float* offsets = (float*)buff;
-    printf("Result Tensor :\n");
-    // for(int i=0;i<10;i++)
-    // {
-    //     printf("%f\n",offsets[i]);
-    // }
-    printf("%f\n",offsets[0]);
-    return 0;
+  // Free memory
+  TF_DeleteGraph(Graph);
+  TF_DeleteSession(Session, Status);
+  TF_DeleteSessionOptions(SessionOpts);
+  TF_DeleteStatus(Status);
 
-
+  // ================================
+  // Print outputs
+  // ================================
+  void* buff = TF_TensorData(OutputValues[0]);
+  float* offsets = (float*)buff;
+  printf("Result Tensor :\n");
+  printf("%f\n",offsets[0]);
+  return 0;
 }
