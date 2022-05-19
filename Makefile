@@ -8,7 +8,7 @@ SRC=example_tensorflow_AICT
 all: run
 
 run: $(SRC).o
-	$(CC) $(CCFLAGS) -o example.exe $(SRC).cpp
+	$(CC) $(CFLAGS) -o example.exe $(SRC).c
      
 clean:
 	 rm *.o *.exe 

@@ -7,20 +7,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "tensorflow/c/c_api.h"
-#include <vector>
-// #include <hdf5.h>
-
 
 void NoOpDeallocator(void* data, size_t a, void* b) {}
 
 int main(int argc, char** argv)
 {
-  if (argc <= 1) { printf("ERROR: ./example.exe models/<model-name>\n"); return -1;}
+  if (argc <= 2) { printf("ERROR: ./example.exe models/<model-name> <image>\n"); return -1;}
   // AICT model in: /gpfs/alpine/gen006/proj-shared/irl1/aict_tfkeras/AICT_checkpoint_dir/horovod_4node_chckpt/ckpt-090
 
-//   const char* array_name = "../../image_009.h5";
-//   auto f_id = H5Fopen( array_name , H5F_ACC_RDONLY , H5P_DEFAULT );
-//   H5File file1( FILE_NAME, H5F_ACC_RDONLY );
+  
 
   // ================================
   // Read model and allocate inputs & outputs
@@ -98,15 +93,46 @@ int main(int argc, char** argv)
   int nx = 32;
   int ny = 32;
   int nz = 5;
+
+  // read images
+  //      FILE *imagefile;
+  //      float image[nx][ny];
+  //      const char* image_dir = argv[2];
+  //      imagefile=fopen(image_dir, "r");
+  //      for(int i=0; i<nx; i++) {
+  //        for (int j=0 ; j<ny; j++) {
+  //          fscanf(imagefile,"%lf",&image[i][j]);
+  //        }
+  //      }
+  //      fclose(imagefile);
+
+  FILE *imagefile;
+  float images[nz][nx][ny];
+  const char* image_dir = argv[2];
+  for (int k=0; k<nz; k++) {
+    imagefile=fopen(image_dir, "r");
+    printf("Loading image: %d\n", k);
+    for(int i=0; i<nx; i++) {
+      for (int j=0; j<ny; j++) {
+        fscanf(imagefile,"%lf",&images[k][i][j]);
+      }
+    }
+    fclose(imagefile);
+  }
+  printf("Finished reading images!\n");
+
+  // allocate TF arrays
   int64_t dims[] = {1,nx,ny,nz};
+  printf("Allocated TF dims\n");
   float   data[nx*ny*nz];
+  printf("Allocated TF array\n");
   int ndata = sizeof(float)*nx*ny*nz; // number of bytes not number of elements
   
   int l = 0;
   for (int k=0; k<nz; k++) {
     for (int i=0; i<nx; i++) {
       for (int j=0; j<ny; j++) {
-        data[l] = 1.0;
+        data[l] = 1.0; //images[k][i][j];
         l++;
       }
     }
@@ -146,11 +172,28 @@ int main(int argc, char** argv)
   // Print outputs
   // ================================
   void* buff = TF_TensorData(OutputValues[0]);
-  float* offsets = (float*)buff;
-  printf("Result Tensor :\n");
-  for(int i=0;i<nx*ny;i++) {
-    printf("%f\n",offsets[i]);
+  float* outvalues = (float*)buff;
+
+  float image_out[nx][ny];
+  imagefile=fopen("sample_out.txt", "w");
+  int k = 0;
+  for(int i=0; i<nx; i++) {
+    for (int j=0; j<ny; j++) {
+      image_out[i][j] = outvalues[k];
+      printf("%f   ", image_out[i][j]);
+      fprintf(imagefile,"%f ",&image_out[i][j]);
+      k++;
+    }
+    fprintf(imagefile,"\n");
+    printf("\n");
   }
+  fclose(imagefile);
+
+  
+  //    printf("Result Tensor :\n");
+  //    for(int i=0;i<nx*ny;i++) {
+  //      printf("%f\n",outvalues[i]);
+  //    }
 
   return 0;
 }
