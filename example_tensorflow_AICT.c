@@ -90,35 +90,35 @@ int main(int argc, char** argv)
 
   // set the dimensions of the images here
   int ndims = 4;  // TF requires an additional dim: 3+1
-  int nx = 32;
-  int ny = 32;
+  int nx = 512;
+  int ny = 512;
   int nz = 5;
 
   // read images
-  //      FILE *imagefile;
-  //      float image[nx][ny];
-  //      const char* image_dir = argv[2];
-  //      imagefile=fopen(image_dir, "r");
-  //      for(int i=0; i<nx; i++) {
-  //        for (int j=0 ; j<ny; j++) {
-  //          fscanf(imagefile,"%lf",&image[i][j]);
-  //        }
-  //      }
-  //      fclose(imagefile);
-
   FILE *imagefile;
-  float images[nz][nx][ny];
+  float image[nx][ny];
   const char* image_dir = argv[2];
-  for (int k=0; k<nz; k++) {
-    imagefile=fopen(image_dir, "r");
-    printf("Loading image: %d\n", k);
-    for(int i=0; i<nx; i++) {
-      for (int j=0; j<ny; j++) {
-        fscanf(imagefile,"%lf",&images[k][i][j]);
-      }
+  imagefile=fopen(image_dir, "r");
+  for(int i=0; i<nx; i++) {
+    for (int j=0 ; j<ny; j++) {
+      fscanf(imagefile,"%f",&image[i][j]);
     }
-    fclose(imagefile);
   }
+  fclose(imagefile);
+
+  // FILE *imagefile;
+  // float images[nz][nx][ny];
+  // const char* image_dir = argv[2];
+  // for (int k=0; k<nz; k++) {
+  //   imagefile=fopen(image_dir, "r");
+  //   printf("Loading image: %d\n", k);
+  //   for(int i=0; i<nx; i++) {
+  //     for (int j=0; j<ny; j++) {
+  //       fscanf(imagefile,"%f",&images[k][i][j]);
+  //     }
+  //   }
+  //   fclose(imagefile);
+  // }
   printf("Finished reading images!\n");
 
   // allocate TF arrays
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
   for (int k=0; k<nz; k++) {
     for (int i=0; i<nx; i++) {
       for (int j=0; j<ny; j++) {
-        data[l] = 1.0; //images[k][i][j];
+        data[l] = image[i][j];
         l++;
       }
     }
@@ -169,31 +169,23 @@ int main(int argc, char** argv)
   TF_DeleteStatus(Status);
 
   // ================================
-  // Print outputs
+  // Write outputs
   // ================================
   void* buff = TF_TensorData(OutputValues[0]);
   float* outvalues = (float*)buff;
 
-  float image_out[nx][ny];
   imagefile=fopen("sample_out.txt", "w");
   int k = 0;
   for(int i=0; i<nx; i++) {
     for (int j=0; j<ny; j++) {
-      image_out[i][j] = outvalues[k];
-      printf("%f   ", image_out[i][j]);
-      fprintf(imagefile,"%f ",&image_out[i][j]);
+      // printf("%f   ", outvalues[k]);
+      fprintf(imagefile,"%f ", outvalues[k]);
       k++;
     }
     fprintf(imagefile,"\n");
-    printf("\n");
+    // printf("\n");
   }
   fclose(imagefile);
-
-  
-  //    printf("Result Tensor :\n");
-  //    for(int i=0;i<nx*ny;i++) {
-  //      printf("%f\n",outvalues[i]);
-  //    }
 
   return 0;
 }
