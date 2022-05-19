@@ -12,10 +12,8 @@ void NoOpDeallocator(void* data, size_t a, void* b) {}
 
 int main(int argc, char** argv)
 {
-  if (argc <= 2) { printf("ERROR: ./example.exe models/<model-name> <image>\n"); return -1;}
+  if (argc <= 2) { printf("ERROR: ./example.exe models/<model-name> <image-folder>\n"); return -1;}
   // AICT model in: /gpfs/alpine/gen006/proj-shared/irl1/aict_tfkeras/AICT_checkpoint_dir/horovod_4node_chckpt/ckpt-090
-
-  
 
   // ================================
   // Read model and allocate inputs & outputs
@@ -95,47 +93,69 @@ int main(int argc, char** argv)
   int nz = 5;
 
   // read images
-  FILE *imagefile;
-  float image[nx][ny];
   const char* image_dir = argv[2];
-  imagefile=fopen(image_dir, "r");
-  for(int i=0; i<nx; i++) {
-    for (int j=0 ; j<ny; j++) {
-      fscanf(imagefile,"%f",&image[i][j]);
-    }
-  }
-  fclose(imagefile);
-
-  // FILE *imagefile;
-  // float images[nz][nx][ny];
-  // const char* image_dir = argv[2];
-  // for (int k=0; k<nz; k++) {
-  //   imagefile=fopen(image_dir, "r");
-  //   printf("Loading image: %d\n", k);
-  //   for(int i=0; i<nx; i++) {
-  //     for (int j=0; j<ny; j++) {
-  //       fscanf(imagefile,"%f",&images[k][i][j]);
-  //     }
-  //   }
-  //   fclose(imagefile);
+  char *image_type = "SheppLogan";   // SheppLogan  or tissue
+  char *image_name;
+  FILE *imagefile;
+  
+  // // Read one image
+  // asprintf(&image_name, "%simages_00%d.txt", image_dir, 0);
+  // printf("Image name: %s\n", image_name);
+  // float image[nx][ny];
+  // imagefile=fopen(image_name, "r");
+  // if (NULL == imagefile) {
+  //   printf("%s file can't be opened\n", image_name);
   // }
-  printf("Finished reading images!\n");
+  // for(int i=0; i<nx; i++) {
+  //   for (int j=0 ; j<ny; j++) {
+  //     fscanf(imagefile,"%f",&image[i][j]);
+  //   }
+  // }
+  // fclose(imagefile);
+
+  // // Read nz images [Memory issue when nx=ny=512]
+  // // float images[nz][nx][ny];
+  // // for (int k=0; k<nz; k++) {
+  // //   asprintf(&image_name, "%simages_00%d.txt", image_dir, k);
+  // //   printf("Loading image: %s\n", image_name);
+  // //   imagefile=fopen(image_name, "r");
+  // //   if (NULL == imagefile) {
+  // //     printf("%s file can't be opened\n", image_name);
+  // //   }
+  // //   for(int i=0; i<nx; i++) {
+  // //     for (int j=0; j<ny; j++) {
+  // //       fscanf(imagefile,"%f",&images[k][i][j]);
+  // //     }
+  // //   }
+  // //   fclose(imagefile);
+  // // }
+  // printf("Finished reading images!\n");
 
   // allocate TF arrays
   int64_t dims[] = {1,nx,ny,nz};
-  printf("Allocated TF dims\n");
   float   data[nx*ny*nz];
-  printf("Allocated TF array\n");
   int ndata = sizeof(float)*nx*ny*nz; // number of bytes not number of elements
-  
+
+  // get input data
   int l = 0;
   for (int k=0; k<nz; k++) {
+    // creat image name
+    asprintf(&image_name, "%ssample_%s_in_000%d.txt", image_dir, image_type, k+1);
+    // load image
+    printf("Loading image: %s\n", image_name);
+    imagefile=fopen(image_name, "r");
+    if (NULL == imagefile) {
+        printf("%s file can't be opened\n", image_name);
+    }
+    // read pixles and store in 1D array
     for (int i=0; i<nx; i++) {
       for (int j=0; j<ny; j++) {
-        data[l] = image[i][j];
+        // data[l] = image[i][j];           // use loaded images [memory issue when large nx, ny]
+        fscanf(imagefile,"%f",&data[l]);    // directly load image data
         l++;
       }
     }
+    fclose(imagefile);
   }
 
   TF_Tensor* int_tensor = TF_NewTensor(TF_FLOAT, dims, ndims, data, ndata, &NoOpDeallocator, 0);
@@ -173,8 +193,9 @@ int main(int argc, char** argv)
   // ================================
   void* buff = TF_TensorData(OutputValues[0]);
   float* outvalues = (float*)buff;
-
-  imagefile=fopen("sample_out.txt", "w");
+  
+  asprintf(&image_name, "%ssample_%s_out.txt", image_dir, image_type);
+  imagefile=fopen(image_name, "w");
   int k = 0;
   for(int i=0; i<nx; i++) {
     for (int j=0; j<ny; j++) {
