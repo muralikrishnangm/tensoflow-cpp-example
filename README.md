@@ -17,6 +17,7 @@ The following examples are provided (will be updated accordingly):
     - Based on https://github.com/AmirulOm/tensorflow_capi_sample.git
 3. [`example_tensorflow_tanh.c`](example_tensorflow_tanh.c): A simple feedforwad NN for regression
     - Model based on https://github.com/muralikrishnangm/tutorial-ai4science-fluidflow#example-1
+4. [example_tensorflow_AICT.c](example_tensorflow_AICT.c): To load and perform inference on a CNN model. Used for the [2022 AAPM TrueCT Challenge](https://www.aapm.org/GrandChallenge/TrueCT/)
 
 # Usage
 
