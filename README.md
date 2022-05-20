@@ -1,6 +1,6 @@
-# tensoflow-cpp-example
+# tensoflow-c-example
 
-Sample script for loading and inferencing TensorFlow models in C++.
+Sample script for loading and inferencing TensorFlow models in C.
 
 Author: Muralikrishnan Gopalakrishnan Meena (Oak Ridge National Laboratory), https://sites.google.com/view/muraligm/
 
@@ -9,13 +9,13 @@ Contributors:
 
 # Description
 
-These are sample scripts to load a TensorFlow model and run a forward step. See [TensorFlow for C](https://www.tensorflow.org/install/lang_c) for TF C++ API installation instructions.
+These are sample scripts to load a TensorFlow model and run a forward step. See [TensorFlow for C](https://www.tensorflow.org/install/lang_c) for TF C API installation instructions.
 
 The following examples are provided (will be updated accordingly):
-1. [`example_tensorflow_HelloWorld.cpp`](example_tensorflow_HelloWorld.cpp): A sample Hello World implementation
-2. [`example_tensorflow_NNmodel.cpp`](example_tensorflow_NNmodel.cpp): A simple model to replicate an activation function
+1. [`example_tensorflow_HelloWorld.c`](example_tensorflow_HelloWorld.c): A sample Hello World implementation
+2. [`example_tensorflow_NNmodel.c`](example_tensorflow_NNmodel.c): A simple model to replicate an activation function
     - Based on https://github.com/AmirulOm/tensorflow_capi_sample.git
-3. [`example_tensorflow_tanh.cpp`](example_tensorflow_tanh.cpp): A simple feedforwad NN for regression
+3. [`example_tensorflow_tanh.c`](example_tensorflow_tanh.c): A simple feedforwad NN for regression
     - Model based on https://github.com/muralikrishnangm/tutorial-ai4science-fluidflow#example-1
 
 # Usage
@@ -43,7 +43,7 @@ my_model.save('model_dir_name', save_format='tf')
     ./example.exe models/<model-name>
     ```
     
-* Sample output for `example_tensorflow_HelloWorld.cpp`:
+* Sample output for `example_tensorflow_HelloWorld.c`:
   ```
   Hello from TensorFlow C library version 2.4.1
   ```
