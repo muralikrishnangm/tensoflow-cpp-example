@@ -1,4 +1,4 @@
-# tensoflow-c-example
+# Introduction
 
 Sample script for loading and inferencing TensorFlow models in C.
 
