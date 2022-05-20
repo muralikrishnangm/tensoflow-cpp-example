@@ -17,7 +17,7 @@ The following examples are provided (will be updated accordingly):
     - Based on https://github.com/AmirulOm/tensorflow_capi_sample.git
 3. [`example_tensorflow_tanh.c`](example_tensorflow_tanh.c): A simple feedforwad NN for regression
     - Model based on https://github.com/muralikrishnangm/tutorial-ai4science-fluidflow#example-1
-4. [example_tensorflow_AICT.c](example_tensorflow_AICT.c): To load and perform inference on a CNN model. Used for the [2022 AAPM TrueCT Challenge](https://www.aapm.org/GrandChallenge/TrueCT/)
+4. [`example_tensorflow_AICT.c`](example_tensorflow_AICT.c): To load and perform inference on a CNN model. Used for the [2022 AAPM TrueCT Challenge](https://www.aapm.org/GrandChallenge/TrueCT/)
 
 # Usage
 
@@ -26,7 +26,7 @@ First save any TensorFlow or Keras model in your python script as:
 my_model.save('model_dir_name', save_format='tf')
 ```
 
-1. Activate binaries using environment file corresponding to your machine
+1. Activate binaries using environment file corresponding to your machine:
     ```
     source build/<machineName>_<cpu/gpu>.env
     ```
@@ -35,13 +35,13 @@ my_model.save('model_dir_name', save_format='tf')
     source build/summit_cpu.env
     ```
 2. Compile: 
-    Update `Makefile` to select which model to do inference (change `SRC` in the file)
+    Update `Makefile` to select which model to do inference (change `SRC` in the file). Then do:
     ```
     make
     ```
 3. Run:
     ```
-    ./example.exe models/<model-name>
+    ./example.exe <options>
     ```
     
 * Sample output for `example_tensorflow_HelloWorld.c`:
