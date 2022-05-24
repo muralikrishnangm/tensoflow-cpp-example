@@ -87,10 +87,11 @@ int main(int argc, char** argv)
   TF_Tensor** OutputValues = (TF_Tensor**)malloc(sizeof(TF_Tensor*)*NumOutputs);
 
   // set the dimensions of the images here
-  int ndims = 4;  // TF requires an additional dim: 3+1
-  int nx = 512;
-  int ny = 512;
-  int nz = 5;
+  int ndims      = 4;  // TF requires an additional dim: 3+1
+  int nx         = 512;
+  int ny         = 512;
+  int nz         = 5;
+  int batch_size = 1;
 
   // read images
   const char* image_dir = argv[2];
@@ -132,12 +133,12 @@ int main(int argc, char** argv)
   // printf("Finished reading images!\n");
 
   // allocate TF arrays
-  int64_t dims[] = {1,nx,ny,nz};
-  float   data[nx*ny*nz];
-  int ndata = sizeof(float)*nx*ny*nz; // number of bytes not number of elements
+  int64_t dims[] = {batch_size,nx,ny,nz};
+  float   data[batch_size][nx][ny][nz];
+  int ndata = sizeof(float)*batch_size*nx*ny*nz; // number of bytes not number of elements
 
-  // get input data
-  int l = 0;
+  // get input data 
+  // NOTE: for batch_size = 1
   for (int k=0; k<nz; k++) {
     // creat image name
     asprintf(&image_name, "%ssample_%s_in_000%d.txt", image_dir, image_type, k+1);
@@ -147,12 +148,11 @@ int main(int argc, char** argv)
     if (NULL == imagefile) {
         printf("%s file can't be opened\n", image_name);
     }
-    // read pixles and store in 1D array
+    // read pixles and store in data array
     for (int i=0; i<nx; i++) {
       for (int j=0; j<ny; j++) {
-        // data[l] = image[i][j];           // use loaded images [memory issue when large nx, ny]
-        fscanf(imagefile,"%f",&data[l]);    // directly load image data
-        l++;
+        // data[0][i][j][k] = image[i][j];           // use loaded images [memory issue when large nx, ny]
+        fscanf(imagefile,"%f",&data[0][i][j][k]);    // directly load image data
       }
     }
     fclose(imagefile);
@@ -182,6 +182,26 @@ int main(int argc, char** argv)
     printf("%s",TF_Message(Status));
   }
 
+  // // Dimensions and shapes of input & output tensors
+  // int ndim_input = TF_GraphGetTensorNumDims(Graph, *Input, Status);
+  // printf("# dim of input: %d\n", ndim_input);
+  // int64_t shape_input[ndim_input];
+  // TF_GraphGetTensorShape(Graph, *Input, shape_input, ndim_input, Status);
+  // printf("Shape of input: ");
+  // for (int i=0; i<ndim_input; i++) {
+  //   printf(" %d ", shape_input[i]);
+  // }
+  // printf("\n");
+  // int ndim_output = TF_GraphGetTensorNumDims(Graph, *Output, Status);
+  // printf("# dim of output: %d\n", ndim_output);
+  // int64_t shape_output[ndim_output];
+  // TF_GraphGetTensorShape(Graph, *Output, shape_output, ndim_output, Status);
+  // printf("Shape of output: ");
+  // for (int i=0; i<ndim_output; i++) {
+  //   printf(" %d ", shape_output[i]);
+  // }
+  // printf("\n");
+  
   // Free memory
   TF_DeleteGraph(Graph);
   TF_DeleteSession(Session, Status);
